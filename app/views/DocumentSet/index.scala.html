@@ -2,8 +2,7 @@
   user: OverviewUser,
   documentSets: org.overviewproject.tree.orm.finders.ResultPage[(
     org.overviewproject.tree.orm.DocumentSet,
-    Seq[org.overviewproject.tree.orm.Tree],
-    Seq[org.overviewproject.tree.orm.DocumentSetCreationJob]
+    Seq[Either[org.overviewproject.tree.orm.DocumentSetCreationJob,org.overviewproject.tree.orm.Tree]]
   )],
   jobs: Iterable[(org.overviewproject.tree.orm.DocumentSetCreationJob,org.overviewproject.tree.orm.DocumentSet,Long)],
   form: controllers.forms.DocumentSetForm.FormType
@@ -85,13 +84,11 @@
 @**** Stupid function needed only because I can't figure out how to pass 2 params in the map call ****@
 @displayDocumentSet(documentSetWithTrees: (
     org.overviewproject.tree.orm.DocumentSet,
-    Seq[org.overviewproject.tree.orm.Tree],
-    Seq[org.overviewproject.tree.orm.DocumentSetCreationJob]
+    Seq[Either[org.overviewproject.tree.orm.DocumentSetCreationJob,org.overviewproject.tree.orm.Tree]]
   )) = {
   @views.html.DocumentSet._documentSet(
     documentSetWithTrees._1,
     documentSetWithTrees._2,
-    documentSetWithTrees._3,
     user
   )
 }

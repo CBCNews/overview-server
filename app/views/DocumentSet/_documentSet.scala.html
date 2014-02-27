@@ -1,7 +1,6 @@
 @(
   documentSet: org.overviewproject.tree.orm.DocumentSet,
-  trees: Seq[org.overviewproject.tree.orm.Tree],
-  treeErrorJobs: Seq[org.overviewproject.tree.orm.DocumentSetCreationJob],
+  treesAndJobs: Seq[Either[org.overviewproject.tree.orm.DocumentSetCreationJob,org.overviewproject.tree.orm.Tree]],
   viewer: OverviewUser
 )(implicit lang: play.api.i18n.Lang, request: RequestHeader)
 
@@ -40,8 +39,8 @@
       /></form>
     </div>
     <h3>
-      @if(trees.length + treeErrorJobs.length == 1) {
-        <a href="@routes.TreeController.show(documentSet.id, trees.head.id)">@documentSet.title</a>
+      @if(treesAndJobs.length == 1 && treesAndJobs.headOption.map(_.isRight).getOrElse(false)) {
+        <a href="@routes.TreeController.show(documentSet.id, treesAndJobs.head.right.get.id))">@documentSet.title</a>
       } else {
         @documentSet.title
       }
@@ -65,11 +64,13 @@
         <span class="overflow-count" title="@m("nOverflow.title")">@m("nOverflow", documentSet.importOverflowCount)</span>
       }
     </h4>
-    <div class="trees@{ if (trees.length + treeErrorJobs.length == 1) " single" else "" }">
-      <h5>@m("nTrees", trees.length + treeErrorJobs.length)</h5>
+    <div class="trees@{ if (treesAndJobs.length == 1) " single" else "" }">
+      <h5>@m("nTrees", treesAndJobs.length)</h5>
       <ul>
-        @trees.map(_tree.apply(_))
-        @treeErrorJobs.map(_treeErrorJob.apply(_))
+        @treesAndJobs.map(_ match {
+          case Left(job) => _treeJob(job)
+          case Right(tree) => _tree(tree)
+        })
       </ul>
     </div>
   </li>

@@ -6,7 +6,7 @@ import scala.language.implicitConversions
 
 import org.overviewproject.postgres.SquerylEntrypoint._
 import org.overviewproject.tree.{DocumentSetCreationJobType, Ownership}
-import org.overviewproject.tree.orm.{DocumentSet, DocumentSetCreationJobState}
+import org.overviewproject.tree.orm.DocumentSet
 import org.overviewproject.tree.orm.finders.{Finder, FinderResult}
 
 import org.squeryl.Query
@@ -118,14 +118,12 @@ object DocumentSetFinder extends Finder {
 
   /** @return List of document set IDs, for use in an IN clause.
     *
-    * Every ID returned will have a DocumentSetCreationJob.
+    * Every ID returned will have a DocumentSetCreationJob that is _not_ of
+    * type Recluster.
     */
   protected[finders] def documentSetIdsWithCreationJobs = {
     from(Schema.documentSetCreationJobs)(dscj =>
-      where(not(
-        (dscj.jobType === DocumentSetCreationJobType.Recluster) and
-        (dscj.state in Seq(DocumentSetCreationJobState.Error, DocumentSetCreationJobState.Cancelled))
-      ))
+      where(not(dscj.jobType === DocumentSetCreationJobType.Recluster))
       select(dscj.documentSetId)
     )
   }

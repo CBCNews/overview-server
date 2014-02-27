@@ -1,0 +1,13 @@
+@(
+  job: org.overviewproject.tree.orm.DocumentSetCreationJob
+)(implicit lang: play.api.i18n.Lang)
+
+@defining(scopedMessages("views.DocumentSet._treeErrorJob")) { m =>
+  <li class="@views.helper.DocumentSetHelper.jobStateClass(job.state)" data-job-id="@job.id">
+    <h6>@job.treeTitle.getOrElse("")</h6>
+    @if(job.fractionComplete > 0.0 && job.fractionComplete < 1.0) {
+      <progress value="@job.fractionComplete"></progress>
+    }
+    <span class="status-description">@views.helper.DocumentSetHelper.jobDescriptionKeyToMessage(job.statusDescription)</span>
+  </li>
+}

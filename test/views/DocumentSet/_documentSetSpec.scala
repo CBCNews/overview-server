@@ -7,10 +7,9 @@ import models.OverviewUser
 class _documentSetSpec extends views.html.ViewSpecification {
   trait BaseScope extends HtmlViewSpecificationScope {
     def documentSet: DocumentSet = DocumentSet(id=1L)
-    def trees: Seq[Tree] = Seq()
-    def treeErrorJobs: Seq[DocumentSetCreationJob] = Seq()
+    def treesAndJobs: Seq[Either[DocumentSetCreationJob,Tree]] = Seq()
 
-    def result = _documentSet(documentSet, trees, treeErrorJobs, fakeUser)
+    def result = _documentSet(documentSet, treesAndJobs, fakeUser)
 
     def fakeTree(documentSetId: Long, id: Long) = Tree(
       id=id,
@@ -44,43 +43,42 @@ class _documentSetSpec extends views.html.ViewSpecification {
     }
 
     "should link to the Tree from the h3 if there is one tree" in new BaseScope {
-      override def trees = Seq(fakeTree(documentSet.id, 10))
+      override def treesAndJobs = Seq(Right(fakeTree(documentSet.id, 10)))
 
       val href = $("h3 a[href]").get().headOption.map(_.getAttribute("href"))
       href must beSome(contain(s"/${documentSet.id}/trees/10"))
     }
 
     "should not link to the Tree from the h3 if there are several" in new BaseScope {
-      override def trees = Seq(fakeTree(documentSet.id, 10), fakeTree(documentSet.id, 11))
+      override def treesAndJobs = Seq(Right(fakeTree(documentSet.id, 10)), Right(fakeTree(documentSet.id, 11)))
       $("h3 a[href]").length must beEqualTo(0)
     }
 
     "should set div.trees.single if there is one tree" in new BaseScope {
-      override def trees = Seq(fakeTree(documentSet.id, 10))
+      override def treesAndJobs = Seq(Right(fakeTree(documentSet.id, 10)))
       $("div.trees.single").length must beEqualTo(1)
     }
 
     "should not set div.trees.single if there are many trees" in new BaseScope {
-      override def trees = Seq(fakeTree(documentSet.id, 10), fakeTree(documentSet.id, 11))
+      override def treesAndJobs = Seq(Right(fakeTree(documentSet.id, 10)), Right(fakeTree(documentSet.id, 11)))
       $("div.trees").length must beEqualTo(1)
       $("div.trees.single").length must beEqualTo(0)
     }
 
     "should not set div.trees.single if there are error jobs" in new BaseScope {
-      override def trees = Seq(fakeTree(documentSet.id, 10))
-      override def treeErrorJobs = Seq(fakeTreeErrorJob(documentSet.id, 11))
+      override def treesAndJobs = Seq(Right(fakeTree(documentSet.id, 10)), Left(fakeTreeErrorJob(documentSet.id, 11)))
       $("div.trees").length must beEqualTo(1)
       $("div.trees.single").length must beEqualTo(0)
     }
 
     "should link to each tree in div.trees" in new BaseScope {
-      override def trees = Seq(fakeTree(documentSet.id, 10), fakeTree(documentSet.id, 11))
+      override def treesAndJobs = Seq(Right(fakeTree(documentSet.id, 10)), Right(fakeTree(documentSet.id, 11)))
       $("div.trees li[data-tree-id='10'] a[href]").attr("href") must beEqualTo("/documentsets/1/trees/10")
       $("div.trees li[data-tree-id='11'] a[href]").attr("href") must beEqualTo("/documentsets/1/trees/11")
     }
 
     "should show each error job in div.trees" in new BaseScope {
-      override def treeErrorJobs = Seq(fakeTreeErrorJob(documentSet.id, 11), fakeTreeErrorJob(documentSet.id, 12))
+      override def treesAndJobs = Seq(Left(fakeTreeErrorJob(documentSet.id, 11)), Left(fakeTreeErrorJob(documentSet.id, 12)))
       $("div.trees li.error[data-job-id='11']").text() must contain("tree title")
       $("div.trees li.error[data-job-id='12']").text() must contain("tree title")
     }
